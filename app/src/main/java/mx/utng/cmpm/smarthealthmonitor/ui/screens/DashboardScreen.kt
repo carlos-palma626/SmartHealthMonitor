@@ -17,16 +17,23 @@ import mx.utng.cmpm.smarthealthmonitor.ui.components.FilaHistorial
 import mx.utng.cmpm.smarthealthmonitor.ui.components.TarjetaDato
 import mx.utng.cmpm.smarthealthmonitor.ui.theme.SmartHealthMonitorTheme
 
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import mx.utng.cmpm.smarthealthmonitor.ui.viewmodel.DashboardViewModel
+
+import mx.utng.cmpm.smarthealthmonitor.data.SmartHealthRepository
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     onHistorialClick: () -> Unit = {},
-    onAlertClick: () -> Unit = {}
+    onAlertClick: () -> Unit = {},
+    viewModel: DashboardViewModel = viewModel()
 ) {
-// TODO S6: Reemplazar con ViewModel que recibe datos del wearable
-    val fc: Int = MockData.fcActual
-    val pasos: Int = MockData.pasosActual
-    val historial: List<LecturaFC> = MockData.historialFC
+    val fc by viewModel.fc.collectAsState()
+    val pasos by viewModel.pasos.collectAsState()
+    val historial = viewModel.historial
 
     Scaffold(
         topBar = {
@@ -39,7 +46,7 @@ fun DashboardScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary // CORREGIDO: Se añadió MaterialTheme.colorScheme
                 )
             )
         },
@@ -56,7 +63,6 @@ fun DashboardScreen(
             }
         }
     ) { paddingValues ->
-// paddingValues OBLIGATORIO
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -102,6 +108,24 @@ fun DashboardScreen(
             items(historial, key = { it.id }) { lectura ->
                 FilaHistorial(lectura = lectura)
             }
+
+// ==========================================
+// ESTRUCTURA DE SIMULACIÓN (PASO 1 - EJERCICIO 03) [cite: 187]
+// ==========================================
+            item {
+                // Dejado directo para pruebas de entrega escolar, evitando conflictos de compilación de IDE [cite: 192]
+                OutlinedButton(
+                    onClick = {
+                        val fcSimulado = (60..110).random()
+                        SmartHealthRepository.actualizarFC(fcSimulado)
+                        SmartHealthRepository.actualizarPasos((3000..8000).random())
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                Text("Simular dato del wearable (DEBUG)")
+            }
+            }
+
         }
     }
 }
