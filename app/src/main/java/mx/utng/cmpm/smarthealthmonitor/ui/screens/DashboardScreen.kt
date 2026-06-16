@@ -11,11 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import mx.utng.cmpm.smarthealthmonitor.data.models.LecturaFC
+import mx.utng.cmpm.smarthealthmonitor.data.db.LecturaFC
 import mx.utng.cmpm.smarthealthmonitor.data.models.MockData
 import mx.utng.cmpm.smarthealthmonitor.ui.components.FilaHistorial
 import mx.utng.cmpm.smarthealthmonitor.ui.components.TarjetaDato
 import mx.utng.cmpm.smarthealthmonitor.ui.theme.SmartHealthMonitorTheme
+import androidx.compose.ui.text.font.FontWeight
 
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
@@ -23,6 +24,9 @@ import androidx.compose.runtime.getValue
 import mx.utng.cmpm.smarthealthmonitor.ui.viewmodel.DashboardViewModel
 
 import mx.utng.cmpm.smarthealthmonitor.data.SmartHealthRepository
+
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +37,8 @@ fun DashboardScreen(
 ) {
     val fc by viewModel.fc.collectAsState()
     val pasos by viewModel.pasos.collectAsState()
-    val historial = viewModel.historial
+    val historial by viewModel.historial.collectAsState()
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -70,13 +75,15 @@ fun DashboardScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+
 // Tarjeta FC
             item {
+                val isNormal = fc in 60..100 || fc == 0
                 TarjetaDato(
                     valor = "$fc",
                     unidad = "bpm",
                     label = "Frecuencia cardíaca",
-                    colorValor = MaterialTheme.colorScheme.error
+                    colorValor = if (isNormal) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 )
             }
 // Tarjeta Pasos
@@ -107,23 +114,6 @@ fun DashboardScreen(
 // Lista del historial
             items(historial, key = { it.id }) { lectura ->
                 FilaHistorial(lectura = lectura)
-            }
-
-// ==========================================
-// ESTRUCTURA DE SIMULACIÓN (PASO 1 - EJERCICIO 03) [cite: 187]
-// ==========================================
-            item {
-                // Dejado directo para pruebas de entrega escolar, evitando conflictos de compilación de IDE [cite: 192]
-                OutlinedButton(
-                    onClick = {
-                        val fcSimulado = (60..110).random()
-                        SmartHealthRepository.actualizarFC(fcSimulado)
-                        SmartHealthRepository.actualizarPasos((3000..8000).random())
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                Text("Simular dato del wearable (DEBUG)")
-            }
             }
 
         }

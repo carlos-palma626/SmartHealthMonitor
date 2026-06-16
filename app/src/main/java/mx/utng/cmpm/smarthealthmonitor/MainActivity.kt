@@ -22,6 +22,8 @@ import androidx.compose.material.icons.filled.Warning
 import mx.utng.cmpm.smarthealthmonitor.navigation.SmartHealthNavGraph
 import mx.utng.cmpm.smarthealthmonitor.ui.theme.SmartHealthMonitorTheme
 
+import mx.utng.cmpm.smarthealthmonitor.data.SmartHealthRepository
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

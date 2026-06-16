@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import mx.utng.cmpm.smarthealthmonitor.LoginScreen
 import mx.utng.cmpm.smarthealthmonitor.ui.screens.DashboardScreen
+import mx.utng.cmpm.smarthealthmonitor.ui.screens.HistorialScreen
 import mx.utng.cmpm.smarthealthmonitor.ui.theme.SmartHealthMonitorTheme
 
 @Composable
@@ -47,15 +48,14 @@ fun SmartHealthNavGraph() {
             )
         }
 
-        // 3. Historial (Temporal)
+        // 3. Historial ← ya no es PantallaEnConstruccion
         composable(Screen.Historial.route) {
-            PantallaEnConstruccion(
-                titulo = "Historial Completo",
+            HistorialScreen(
                 onBack = { navController.popBackStack() }
             )
         }
 
-        // 4. Alerta (Temporal)
+        // 4. Alerta (sigue temporal)
         composable(Screen.Alerta.route) {
             PantallaEnConstruccion(
                 titulo = "Enviar Alerta",
