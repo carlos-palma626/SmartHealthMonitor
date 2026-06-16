@@ -1,5 +1,5 @@
 package mx.utng.cmpm.smarthealthmonitor.ui.screens
-
+ 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -7,6 +7,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -17,17 +21,16 @@ import mx.utng.cmpm.smarthealthmonitor.ui.components.FilaHistorial
 import mx.utng.cmpm.smarthealthmonitor.ui.components.TarjetaDato
 import mx.utng.cmpm.smarthealthmonitor.ui.theme.SmartHealthMonitorTheme
 import androidx.compose.ui.text.font.FontWeight
-
+ 
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import mx.utng.cmpm.smarthealthmonitor.ui.viewmodel.DashboardViewModel
-
+ 
 import mx.utng.cmpm.smarthealthmonitor.data.SmartHealthRepository
-
+ 
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
-
+ 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
@@ -39,8 +42,40 @@ fun DashboardScreen(
     val pasos by viewModel.pasos.collectAsState()
     val historial by viewModel.historial.collectAsState()
     val scope = rememberCoroutineScope()
-
+ 
+    var mostrarAlerta by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+ 
+    if (mostrarAlerta) {
+        AlertaScreen(
+            fc = fc,
+            onDismiss = { mostrarAlerta = false },
+            onConfirmar = { nota ->
+                mostrarAlerta = false
+                scope.launch {
+                    val mensaje = if (nota.isNotBlank()) {
+                        "✅ Alerta enviada con nota: \"$nota\""
+                    } else {
+                        "✅ Alerta de emergencia enviada a tus contactos"
+                    }
+                    val result = snackbarHostState.showSnackbar(
+                        message = mensaje,
+                        actionLabel = "Deshacer",
+                        duration = SnackbarDuration.Long
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        snackbarHostState.showSnackbar(
+                            message = "Alerta cancelada",
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                }
+            }
+        )
+    }
+ 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -51,13 +86,13 @@ fun DashboardScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary // CORREGIDO: Se añadió MaterialTheme.colorScheme
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onAlertClick,
+                onClick = { mostrarAlerta = true },
                 containerColor = MaterialTheme.colorScheme.error
             ) {
                 Icon(
