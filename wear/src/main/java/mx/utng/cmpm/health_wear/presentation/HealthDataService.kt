@@ -18,6 +18,7 @@ class HealthDataService : PassiveListenerService() {
                 try {
                     // 🔹 EXTRACCIÓN SEGURA: Convierte a string y luego a número para evitar fallas de casteo entre Long/Double
                     val bpm = dataPoint.value.toString().toDouble().toInt()
+                    mx.utng.cmpm.smarthealthmonitor.data.SmartHealthRepository.updateHeartRate(bpm)
                     android.util.Log.d("HealthDataService", "--- HEALTH SERVICES DATA: Ritmo cardíaco a $bpm bpm ---")
 
                     val messageClient = Wearable.getMessageClient(applicationContext)
