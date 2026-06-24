@@ -31,6 +31,8 @@ import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 import kotlinx.coroutines.launch
 import mx.utng.cmpm.health_wear.R
 import mx.utng.cmpm.health_wear.presentation.theme.SmartHealthMonitorTheme
+import mx.utng.cmpm.health_wear.presentation.theme.SmartHealthWearTheme
+import mx.utng.cmpm.health_wear.presentation.SmartHealthWearNavGraph
 
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -84,7 +86,9 @@ class WearMainActivity : ComponentActivity(), SensorEventListener {
         }
 
         setContent {
-            WearApp("Android")
+            SmartHealthWearTheme {
+                SmartHealthWearNavGraph()
+            }
         }
     }
 
@@ -117,6 +121,7 @@ class WearMainActivity : ComponentActivity(), SensorEventListener {
 
         if (event?.sensor?.type == Sensor.TYPE_HEART_RATE) {
             val bpm = event.values[0].toInt()
+            mx.utng.cmpm.smarthealthmonitor.data.SmartHealthRepository.updateHeartRate(bpm)
             android.util.Log.d("WEAR_DEBUG", "=== BPM CAPTURADO: $bpm — buscando nodos para enviar... ===")
 
             val messageClient = Wearable.getMessageClient(applicationContext)
