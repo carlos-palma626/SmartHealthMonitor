@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import mx.utng.cmpm.smarthealthmonitor.data.SmartHealthRepository
+import mx.utng.cmpm.smarthealthmonitor.data.db.LecturaFC
 
 class WearDashboardViewModel : ViewModel() {
    
@@ -26,4 +27,7 @@ class WearDashboardViewModel : ViewModel() {
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = 0
         )
+
+    // Historial de lecturas de ritmo cardíaco
+    val historial: StateFlow<List<LecturaFC>> = SmartHealthRepository.obtenerHistorial()
 }
