@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-07-14T20:14:53.302282800Z">
+        <DropdownSelection timestamp="2026-08-11T08:33:01.762868400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\elmane\.android\avd\Wear_OS_Large_Round.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=e95197f3" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -15,7 +15,7 @@
       </SelectionState>
       <SelectionState runConfigName="wear">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-08-11T06:40:23.050711800Z">
+        <DropdownSelection timestamp="2026-08-11T08:29:26.600838200Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\elmane\.android\avd\Television_720p.avd" />
@@ -26,10 +26,10 @@
       </SelectionState>
       <SelectionState runConfigName="tv">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-08-11T06:40:23.050711800Z">
+        <DropdownSelection timestamp="2026-08-11T08:32:53.802359600Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\elmane\.android\avd\Television_720p.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=e95197f3" />
             </handle>
           </Target>
         </DropdownSelection>

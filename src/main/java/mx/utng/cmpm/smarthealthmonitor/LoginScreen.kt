@@ -25,7 +25,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}) {
     var emailError by remember { mutableStateOf("") }
 
     // Credenciales esperadas para la validación
-    val emailValido = "carlospalmaa74@gmail.com"
+    val emailValido = "hola@gmail.com"
     val passwordValida = "123456"
 
     // TODO 2: Completar la función de validación
