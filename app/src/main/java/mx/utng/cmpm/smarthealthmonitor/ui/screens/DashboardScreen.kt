@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import mx.utng.cmpm.smarthealthmonitor.SmartHealthApp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.mediarouter.app.MediaRouteButton
+import androidx.appcompat.view.ContextThemeWrapper
 import com.google.android.gms.cast.framework.CastButtonFactory
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -98,8 +99,9 @@ fun DashboardScreen(
                 actions = {
                     AndroidView(
                         factory = { context ->
-                            MediaRouteButton(context).apply {
-                                CastButtonFactory.setUpMediaRouteButton(context, this)
+                            val themedContext = ContextThemeWrapper(context, androidx.appcompat.R.style.Theme_AppCompat)
+                            MediaRouteButton(themedContext).apply {
+                                CastButtonFactory.setUpMediaRouteButton(themedContext, this)
                             }
                         },
                         modifier = Modifier.size(48.dp)
@@ -128,28 +130,7 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-// Botón Simular FC
-            item {
-                Button(
-                    onClick = {
-                        scope.launch {
-                            val simulatedBpm = (60..120).random()
-                            val estado = when {
-                                simulatedBpm < 60 -> "FC Baja"
-                                simulatedBpm > 100 -> "FC Alta"
-                                else -> "Normal"
-                            }
-                            // Guardar en Room local y actualizar UI
-                            SmartHealthRepository.actualizarFC(simulatedBpm)
-                            // Mandar por MQTT a la TV mágicamente
-                            app.mqttService.publicarHaciaTv(simulatedBpm, estado)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Simular Ritmo Cardíaco (Mandar a TV)")
-                }
-            }
+
 
 // Tarjeta FC
             item {
