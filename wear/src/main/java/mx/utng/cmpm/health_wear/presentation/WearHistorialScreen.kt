@@ -31,9 +31,10 @@ fun WearHistorialScreen(
     val listState = rememberScalingLazyListState()  
     val focusRequester = remember { FocusRequester() }  
    
-    // Pedir foco para recibir eventos de la corona  
+    // Pedir foco para recibir eventos de la corona y actualizar datos
     LaunchedEffect(Unit) {  
         focusRequester.requestFocus()  
+        viewModel.refreshHistorial()
     }  
    
     Scaffold(  
@@ -84,13 +85,13 @@ fun WearHistorialScreen(
 
 @Composable  
 fun WearFilaHistorial(lectura: LecturaFC) {  
-    val color = if (lectura.esNormal)  
+    val color = if (lectura.estado == "Normal")  
         MaterialTheme.colors.primary  
     else  
         MaterialTheme.colors.error  
    
     Chip(  
-        label = { Text("${lectura.valorBpm} bpm",  
+        label = { Text("${lectura.bpm} bpm",  
                        color = color) },  
         secondaryLabel = { Text(lectura.hora) },  
         onClick = { },  

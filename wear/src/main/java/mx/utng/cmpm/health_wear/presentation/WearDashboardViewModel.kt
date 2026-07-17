@@ -8,15 +8,19 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import mx.utng.cmpm.smarthealthmonitor.data.SmartHealthRepository
 import mx.utng.cmpm.smarthealthmonitor.data.db.LecturaFC
+import kotlinx.coroutines.flow.MutableStateFlow
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.launch
 import mx.utng.cmpm.smarthealthmonitor.wear.mqtt.MqttWearPublisher
+import mx.utng.cmpm.smarthealthmonitor.wear.data.WearNeonRepository
+import kotlinx.coroutines.Dispatchers
 
 class WearDashboardViewModel(application: Application) : AndroidViewModel(application) {
    
     private val mqttPublisher = MqttWearPublisher(application)
+    private val neonRepo = WearNeonRepository()
 
     init {
         mqttPublisher.connect()
@@ -28,6 +32,12 @@ class WearDashboardViewModel(application: Application) : AndroidViewModel(applic
                     else -> "Normal"
                 }
                 mqttPublisher.publishFC(bpm, estado)
+                
+                // Publicar a Neon en IO thread
+                launch(Dispatchers.IO) {
+                    runCatching { neonRepo.publicarLectura(bpm, estado) }
+                        .onFailure { android.util.Log.w("WEAR","Sin red: ${it.message}") }
+                }
             }
         }
     }
@@ -49,8 +59,30 @@ class WearDashboardViewModel(application: Application) : AndroidViewModel(applic
             initialValue = 0
         )
 
-    // Historial de lecturas de ritmo cardíaco
-    val historial: StateFlow<List<LecturaFC>> = SmartHealthRepository.obtenerHistorial()
+    // Historial de lecturas desde Neon
+    private val _historialNeon = MutableStateFlow<List<LecturaFC>>(emptyList())
+    val historial: StateFlow<List<LecturaFC>> = _historialNeon
+
+    fun refreshHistorial() {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { neonRepo.obtenerUltimasLecturas() }
+                .onSuccess { dtoList ->
+                    val lecturas = dtoList.map { dto ->
+                        LecturaFC(
+                            id = dto.id ?: 0,
+                            bpm = dto.bpm ?: 0,
+                            estado = dto.estado ?: "",
+                            dispositivo = dto.dispositivo ?: "",
+                            hora = dto.hora ?: ""
+                        )
+                    }
+                    _historialNeon.value = lecturas
+                }
+                .onFailure {
+                    android.util.Log.e("WEAR_DB", "Error al obtener historial: ${it.message}")
+                }
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()

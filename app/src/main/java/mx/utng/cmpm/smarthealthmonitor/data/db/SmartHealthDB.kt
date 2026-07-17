@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [LecturaFC::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class SmartHealthDB : RoomDatabase() {
@@ -24,7 +24,9 @@ abstract class SmartHealthDB : RoomDatabase() {
                     context.applicationContext,
                     SmartHealthDB::class.java,
                     "smarthealthmonitor_db"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
 
                 INSTANCE = instance
                 instance

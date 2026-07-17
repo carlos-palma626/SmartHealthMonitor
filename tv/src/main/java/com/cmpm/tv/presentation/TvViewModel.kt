@@ -4,59 +4,48 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.content.Context
 import com.cmpm.tv.domain.model.TvUiState
-import com.cmpm.tv.domain.repository.SmartHealthRepository
+import com.cmpm.tv.domain.model.LecturaFC
+import com.cmpm.tv.data.TvNeonRepository
+import com.cmpm.tv.data.LecturaFcDto
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import mx.utng.cmpm.smarthealthmonitor.tv.mqtt.MqttTvSubscriber
-import mx.utng.cmpm.smarthealthmonitor.mqtt.TvMessage
 
 class TvViewModel(
-    private val repository: SmartHealthRepository,
     private val context: Context
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(TvUiState())
+    private val neonRepo = TvNeonRepository()
+    private val _state   = MutableStateFlow(TvUiState())
     val state: StateFlow<TvUiState> = _state.asStateFlow()
 
-    // Flow de mensajes MQTT entrantes
-    private val mqttFlow = MutableStateFlow<TvMessage?>(null)
-    private val mqttSubscriber = MqttTvSubscriber(context, mqttFlow)
+    init { cargarDatos() }
 
-    init {
-        mqttSubscriber.connect()
-
-        // Observar mensajes MQTT y actualizar el estado de la UI
+    fun cargarDatos() {
         viewModelScope.launch {
-            mqttFlow.collect { tvMsg ->
-                tvMsg ?: return@collect
+            _state.update { it.copy(isLoading=true) }
+            try {
+                val lecturas = neonRepo.obtenerHistorialCompleto(50)
+                val stats    = neonRepo.obtenerEstadisticas()
                 _state.update { it.copy(
-                    fcActual = tvMsg.bpm,
-                    fcEstado = tvMsg.estado,
-                    ultimaHora = tvMsg.hora,
+                    lecturas  = lecturas.map { it.toLecturaFC() },
+                    estadisticas = stats.map { it.toLecturaFC() },
                     isLoading = false
                 )}
-            }
-        }
-
-        // Observar historial reactivo del Room DAO (or Fake Repository)
-        viewModelScope.launch {
-            repository.obtenerHistorial()
-                .catch { e -> _state.update { it.copy(error = e.message, isLoading = false) } }
-                .collect { lecturas ->
-                    _state.update { it.copy(lecturas = lecturas, isLoading = false) }
-                }
-        }
-        // Observar FC actual (StateFlow del sensor o mock)
-        viewModelScope.launch {
-            repository.fcActual.collect { bpm ->
-                // Ya no actualizamos fcActual desde aquí, porque el origen de verdad ahora es MQTT.
-                // _state.update { it.copy(fcActual = bpm) }
+            } catch (e: Exception) {
+                _state.update { it.copy(error=e.message, isLoading=false) }
             }
         }
     }
+    
+    fun refresh() = cargarDatos()
 
-    override fun onCleared() {
-        super.onCleared()
-        mqttSubscriber.disconnect()
+    private fun LecturaFcDto.toLecturaFC(): LecturaFC {
+        return LecturaFC(
+            id = id,
+            bpm = bpm,
+            estado = estado,
+            hora = hora,
+            dispositivo = dispositivo
+        )
     }
 }

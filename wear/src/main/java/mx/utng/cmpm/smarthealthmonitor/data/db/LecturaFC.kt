@@ -2,10 +2,8 @@ package mx.utng.cmpm.smarthealthmonitor.data.db
 
 data class LecturaFC(
     val id: Int = 0,
-    val valorBpm: Int,
-    val timestamp: Long = System.currentTimeMillis(),
-    val hora: String = java.text.SimpleDateFormat(
-        "HH:mm", java.util.Locale.getDefault()
-    ).format(java.util.Date()),
-    val esNormal: Boolean = valorBpm in 60..100
+    val bpm: Int,
+    val estado: String,
+    val dispositivo: String = "wear",
+    val hora: String
 )

@@ -151,6 +151,25 @@ fun DashboardScreen(
                     colorValor = MaterialTheme.colorScheme.primary
                 )
             }
+// Botón para simular lectura
+            item {
+                Button(
+                    onClick = { viewModel.simularLectura() },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                ) {
+                    Text("Simular Ritmo Cardíaco (App)")
+                }
+            }
+// Botón para simular lectura Wear
+            item {
+                Button(
+                    onClick = { viewModel.simularLecturaWear() },
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("Simular Ritmo Cardíaco (Wear)")
+                }
+            }
 // Encabezado historial
             item {
                 Row(

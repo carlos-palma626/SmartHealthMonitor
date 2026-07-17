@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -42,8 +43,17 @@ fun HistorialScreen(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                    )
+                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                        actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    actions = {
+                        IconButton(onClick = { viewModel.sincronizar() }) {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = "Sincronizar"
+                            )
+                        }
+                    }
                 )
             }
         ) { paddingValues ->
@@ -85,7 +95,7 @@ fun HistorialScreen(
 
 @Composable
 fun FilaHistorial(lectura: LecturaFC) {
-    val color = if (lectura.esNormal)
+    val color = if (lectura.estado == "Normal")
         MaterialTheme.colorScheme.onSurface
     else
         MaterialTheme.colorScheme.error
@@ -108,7 +118,7 @@ fun FilaHistorial(lectura: LecturaFC) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = "${lectura.valorBpm} bpm",
+                text = "${lectura.bpm} bpm",
                 style = MaterialTheme.typography.titleMedium,
                 color = color
             )

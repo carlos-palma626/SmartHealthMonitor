@@ -35,6 +35,16 @@ android {
         buildConfigField("String", "HIVEMQ_BROKER_URL", hivemqBroker)
         buildConfigField("String", "HIVEMQ_USERNAME", hivemqUser)
         buildConfigField("String", "HIVEMQ_PASSWORD", hivemqPass)
+        
+        val neonApiKey = localProperties.getProperty("NEON_API_KEY")?.removeSurrounding("\"") ?: ""
+        val neonHost = localProperties.getProperty("NEON_HOST")?.removeSurrounding("\"") ?: ""
+        val neonUser = localProperties.getProperty("NEON_USER")?.removeSurrounding("\"") ?: ""
+        val neonPass = localProperties.getProperty("NEON_PASS")?.removeSurrounding("\"") ?: ""
+        
+        buildConfigField("String", "NEON_API_KEY", "\"$neonApiKey\"")
+        buildConfigField("String", "NEON_HOST", "\"$neonHost\"")
+        buildConfigField("String", "NEON_USER", "\"$neonUser\"")
+        buildConfigField("String", "NEON_PASS", "\"$neonPass\"")
     }
 
     buildTypes {
@@ -89,6 +99,15 @@ dependencies {
     implementation(libs.paho.client)
     implementation(libs.paho.service)
     implementation(libs.kotlinx.serialization.json)
+
+    // Retrofit + OkHttp
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

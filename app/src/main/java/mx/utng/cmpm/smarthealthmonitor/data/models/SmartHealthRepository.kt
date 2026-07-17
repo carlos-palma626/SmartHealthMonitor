@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import mx.utng.cmpm.smarthealthmonitor.data.db.LecturaFC
 import mx.utng.cmpm.smarthealthmonitor.data.db.LecturaFCDao
 import mx.utng.cmpm.smarthealthmonitor.data.db.SmartHealthDB
+import mx.utng.cmpm.smarthealthmonitor.data.repository.SyncRepository
 
 // Importaciones de Java para manejo de fechas
 import java.text.SimpleDateFormat
@@ -36,10 +37,12 @@ object SmartHealthRepository {
     val pasosFlow: StateFlow<Int> = _pasosFlow.asStateFlow()
 
     private var dao: LecturaFCDao? = null
+    private var syncRepo: SyncRepository? = null
     private var sharedPreferences: android.content.SharedPreferences? = null
 
     fun init(context: Context) {
         dao = SmartHealthDB.getDatabase(context).lecturaDao()
+        syncRepo = SyncRepository(dao!!)
         sharedPreferences = context.getSharedPreferences("smart_health_prefs", Context.MODE_PRIVATE)
 
         // Cargar los últimos pasos guardados
@@ -48,14 +51,17 @@ object SmartHealthRepository {
         // Cargar la última frecuencia cardíaca registrada de forma asíncrona o pre-poblar si está vacía
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                if (dao?.contarRegistros() == 0) {
-                    val baseTime = System.currentTimeMillis()
-                    dao?.insertar(LecturaFC(valorBpm = 75, hora = "11:30", timestamp = baseTime - 30 * 60 * 1000))
-                    dao?.insertar(LecturaFC(valorBpm = 95, hora = "11:45", timestamp = baseTime - 15 * 60 * 1000))
-                    dao?.insertar(LecturaFC(valorBpm = 110, hora = "12:00", timestamp = baseTime))
+                // Pre-poblar
+                val countFlow = dao?.contarPendientes()?.firstOrNull() ?: 0
+                // We'll skip pre-populating since contarRegistros was removed, or we can just fetch all
+                val all = dao?.obtenerTodas()?.firstOrNull()
+                if (all.isNullOrEmpty()) {
+                    syncRepo?.insertarLectura(LecturaFC(bpm = 75, estado = "Normal", hora = "11:30"))
+                    syncRepo?.insertarLectura(LecturaFC(bpm = 95, estado = "Normal", hora = "11:45"))
+                    syncRepo?.insertarLectura(LecturaFC(bpm = 110, estado = "FC Alta", hora = "12:00"))
                 }
-                dao?.obtenerUltimas()?.firstOrNull()?.firstOrNull()?.let { last ->
-                    _fcFlow.value = last.valorBpm
+                dao?.obtenerTodas()?.firstOrNull()?.firstOrNull()?.let { last ->
+                    _fcFlow.value = last.bpm
                 }
             } catch (e: Exception) {
                 // Manejar excepción silenciosamente
@@ -63,20 +69,27 @@ object SmartHealthRepository {
         }
     }
 
-    suspend fun actualizarFC(bpm: Int) {
+    suspend fun actualizarFC(bpm: Int, dispositivoOrigen: String = "app") {
         _fcFlow.value = bpm
 
         // Crear instancia de la fecha actual
         val timestamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+        val estado = when {
+            bpm < 60 -> "FC Baja"
+            bpm > 100 -> "FC Alta"
+            else -> "Normal"
+        }
 
-        // Persistir en Room (id 0 para autoincremento)
+        // Persistir en Room (id 0 para autoincremento) y sincronizar
         val nuevaLectura = LecturaFC(
             id = 0,
-            valorBpm = bpm,
+            bpm = bpm,
+            estado = estado,
+            dispositivo = dispositivoOrigen,
             hora = timestamp
         )
 
-        dao?.insertar(nuevaLectura)
+        syncRepo?.insertarLectura(nuevaLectura)
     }
 
     fun actualizarPasos(pasos: Int) {
@@ -85,5 +98,9 @@ object SmartHealthRepository {
     }
 
     fun obtenerHistorial(): Flow<List<LecturaFC>> =
-        dao?.obtenerUltimas() ?: emptyFlow()
+        syncRepo?.observarHistorial() ?: emptyFlow()
+        
+    suspend fun sincronizar() {
+        syncRepo?.sincronizarDesdeNeon()
+    }
 }

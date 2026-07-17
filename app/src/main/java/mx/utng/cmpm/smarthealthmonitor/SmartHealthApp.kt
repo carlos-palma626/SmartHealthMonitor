@@ -13,5 +13,8 @@ class SmartHealthApp : Application() {
         
         mqttService = MqttAppService(this)
         mqttService.connect()
+
+        // Programar sync periódico con Neon
+        mx.utng.cmpm.smarthealthmonitor.data.sync.NeonSyncWorker.schedule(this)
     }
 }

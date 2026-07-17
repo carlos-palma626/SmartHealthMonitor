@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.*
 import mx.utng.cmpm.smarthealthmonitor.data.models.MockData
 import mx.utng.cmpm.smarthealthmonitor.data.SmartHealthRepository
 import mx.utng.cmpm.smarthealthmonitor.data.db.LecturaFC
+import kotlinx.coroutines.launch
 
 class DashboardViewModel : ViewModel() {
 
@@ -34,4 +35,26 @@ class DashboardViewModel : ViewModel() {
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = emptyList()
             )
+            
+    fun simularLectura() {
+        viewModelScope.launch {
+            val randomBpm = (50..120).random()
+            SmartHealthRepository.actualizarFC(randomBpm)
+            // Simular actualización de pasos
+            SmartHealthRepository.actualizarPasos(MockData.pasosActual + (10..50).random())
+        }
+    }
+
+    fun simularLecturaWear() {
+        viewModelScope.launch {
+            val randomBpm = (50..120).random()
+            SmartHealthRepository.actualizarFC(randomBpm, "wear")
+        }
+    }
+    
+    fun sincronizar() {
+        viewModelScope.launch {
+            SmartHealthRepository.sincronizar()
+        }
+    }
 }

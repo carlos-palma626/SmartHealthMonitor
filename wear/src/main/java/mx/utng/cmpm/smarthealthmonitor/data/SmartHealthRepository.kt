@@ -18,7 +18,7 @@ object SmartHealthRepository {
         _fcFlow.value = fc
         // Add to history
         val list = _historial.value.toMutableList()
-        list.add(0, LecturaFC(id = list.size + 1, valorBpm = fc))
+        list.add(0, LecturaFC(id = list.size + 1, bpm = fc, estado = if(fc in 60..100) "Normal" else "Anormal", hora = "12:00"))
         _historial.value = list.take(15) // Keep last 15 items
     }
 

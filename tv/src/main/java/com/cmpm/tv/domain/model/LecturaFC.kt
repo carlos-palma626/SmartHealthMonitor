@@ -5,5 +5,6 @@ data class LecturaFC(
     val bpm: Int,
     val timestamp: Long = System.currentTimeMillis(),
     val hora: String = "12:00",
-    val estado: String = "Normal"
+    val estado: String = "Normal",
+    val dispositivo: String = "tv"
 )
