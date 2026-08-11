@@ -13,6 +13,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import mx.utng.cmpm.smarthealthmonitor.SmartHealthApp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.mediarouter.app.MediaRouteButton
 import com.google.android.gms.cast.framework.CastButtonFactory
@@ -45,6 +47,8 @@ fun DashboardScreen(
     val pasos by viewModel.pasos.collectAsState()
     val historial by viewModel.historial.collectAsState()
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val app = context.applicationContext as SmartHealthApp
  
     var mostrarAlerta by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -123,6 +127,29 @@ fun DashboardScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+
+// Botón Simular FC
+            item {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            val simulatedBpm = (60..120).random()
+                            val estado = when {
+                                simulatedBpm < 60 -> "FC Baja"
+                                simulatedBpm > 100 -> "FC Alta"
+                                else -> "Normal"
+                            }
+                            // Guardar en Room local y actualizar UI
+                            SmartHealthRepository.actualizarFC(simulatedBpm)
+                            // Mandar por MQTT a la TV mágicamente
+                            app.mqttService.publicarHaciaTv(simulatedBpm, estado)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Simular Ritmo Cardíaco (Mandar a TV)")
+                }
+            }
 
 // Tarjeta FC
             item {

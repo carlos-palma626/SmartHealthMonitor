@@ -1,6 +1,16 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
 }
 
 android {
@@ -16,6 +26,13 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        val hivemqBroker = localProperties.getProperty("HIVEMQ_BROKER_URL") ?: "\"\""
+        val hivemqUser = localProperties.getProperty("HIVEMQ_USERNAME") ?: "\"\""
+        val hivemqPass = localProperties.getProperty("HIVEMQ_PASSWORD") ?: "\"\""
+
+        buildConfigField("String", "HIVEMQ_BROKER_URL", hivemqBroker)
+        buildConfigField("String", "HIVEMQ_USERNAME", hivemqUser)
+        buildConfigField("String", "HIVEMQ_PASSWORD", hivemqPass)
     }
 
     buildTypes {
@@ -33,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -50,6 +68,11 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
+
+    // MQTT & Serialization
+    implementation(libs.paho.client)
+    implementation(libs.paho.service)
+    implementation(libs.kotlinx.serialization.json)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)

@@ -1,7 +1,17 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.kotlin.serialization)
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
 }
 
 android {
@@ -17,6 +27,14 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("Boolean", "DEBUG", "true")
+
+        val hivemqBroker = localProperties.getProperty("HIVEMQ_BROKER_URL") ?: "\"\""
+        val hivemqUser = localProperties.getProperty("HIVEMQ_USERNAME") ?: "\"\""
+        val hivemqPass = localProperties.getProperty("HIVEMQ_PASSWORD") ?: "\"\""
+
+        buildConfigField("String", "HIVEMQ_BROKER_URL", hivemqBroker)
+        buildConfigField("String", "HIVEMQ_USERNAME", hivemqUser)
+        buildConfigField("String", "HIVEMQ_PASSWORD", hivemqPass)
     }
 
     buildTypes {
@@ -65,6 +83,11 @@ dependencies {
     // Cast SDK
     implementation("androidx.mediarouter:mediarouter:1.7.0")
     implementation("com.google.android.gms:play-services-cast-framework:21.5.0")
+
+    // MQTT & Serialization
+    implementation(libs.paho.client)
+    implementation(libs.paho.service)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
